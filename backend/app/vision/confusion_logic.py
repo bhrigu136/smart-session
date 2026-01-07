@@ -1,15 +1,8 @@
-"""
-confusion_logic.py
-
-Confusion detection using OpenCV-based heuristics.
-"""
-
 import time
 from app.config import (
     CONFUSION_MIN_DURATION_SEC,
     CONFUSION_HEAD_TILT_THRESHOLD
 )
-
 
 class ConfusionDetector:
     def __init__(self):
@@ -33,9 +26,10 @@ class ConfusionDetector:
         else:
             self._start_time = None
             self._confused = False
-
         return self._confused
+
 
     def reset(self):
         self._start_time = None
         self._confused = False
+

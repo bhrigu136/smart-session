@@ -1,13 +1,3 @@
-"""
-main.py
-
-FastAPI entry point for SmartSession backend.
-Responsible only for:
-- app initialization
-- routing
-- WebSocket registration
-"""
-
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -18,29 +8,24 @@ from app.api.health import health_check
 def create_app() -> FastAPI:
     app = FastAPI(
         title="SmartSession Backend",
-        description="Real-time student monitoring and engagement analysis",
+        description="Real-time student monitoring and engagements analysis",
         version="0.1.0"
     )
 
-    # CORS for local frontend development
+        # Middleware
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],   # tighten in production
+        allow_origins=["*"],   
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
 
-    # -------------------------
+    
     # HTTP routes
-    # -------------------------
-
     app.get("/health")(health_check)
-
-    # -------------------------
+    
     # WebSocket routes
-    # -------------------------
-
     @app.websocket("/ws/student")
     async def ws_student(websocket: WebSocket):
         await student_socket(websocket)

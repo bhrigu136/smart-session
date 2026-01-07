@@ -1,23 +1,10 @@
-"""
-face_detector.py
-
-Handles face and eye detection using OpenCV Haar Cascades.
-Used strictly for integrity and simple geometric heuristics.
-"""
+# Handle face and eye detection using openCV Haar Cascades.
 
 import cv2
 from typing import List, Tuple
 
 
 class FaceDetector:
-    """
-    Thin wrapper around OpenCV Haar Cascade detection.
-
-    Responsibilities:
-    - Detect faces in a frame
-    - Detect eyes within a detected face region
-    - Return bounding boxes
-    """
 
     def __init__(self):
         # Face detector
@@ -34,12 +21,9 @@ class FaceDetector:
         )
 
     def detect_faces(self, frame) -> List[Tuple[int, int, int, int]]:
-        """
-        Detect faces in a frame.
+        
+        # Detect faces in a frame, bounding box (x, y, w, h) in FRAME coordinates
 
-        Returns:
-            List of bounding boxes (x, y, w, h) in FRAME coordinates.
-        """
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         faces = self.face_cascade.detectMultiScale(
@@ -51,16 +35,11 @@ class FaceDetector:
 
         return faces.tolist() if len(faces) > 0 else []
 
-    def detect_eyes(self, frame, face_box) -> List[Tuple[int, int, int, int]]:
-        """
-        Detect eyes within a detected face region.
 
-        IMPORTANT:
-        - Returned eye boxes are RELATIVE TO THE FACE ROI,
-          not absolute frame coordinates.
-        - This is intentional, as downstream logic only
-          uses width/height ratios.
-        """
+    def detect_eyes(self, frame, face_box) -> List[Tuple[int, int, int, int]]:
+        
+        # Detect eyes within a face region.
+
         x, y, w, h = face_box
         face_roi = frame[y:y + h, x:x + w]
         gray = cv2.cvtColor(face_roi, cv2.COLOR_BGR2GRAY)
@@ -78,8 +57,9 @@ class FaceDetector:
             else []
         )
 
+
     def count_faces(self, frame) -> int:
-        """
-        Return number of detected faces in the frame.
-        """
+        # returns no. of detected faces.
         return len(self.detect_faces(frame))
+
+

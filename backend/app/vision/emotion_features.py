@@ -1,10 +1,3 @@
-"""
-emotion_features.py
-
-Extracts simple, OpenCV-based facial features.
-No landmarks, no ML models.
-"""
-
 import cv2
 import math
 
@@ -33,10 +26,6 @@ def compute_head_tilt(left_eye, right_eye):
 
 
 def extract_emotion_features(face, eyes):
-    """
-    face: (x, y, w, h)
-    eyes: list of detected eye boxes
-    """
 
     features = {
         "eye_strain": False,
@@ -55,3 +44,6 @@ def extract_emotion_features(face, eyes):
         )
 
     return features
+
+
+

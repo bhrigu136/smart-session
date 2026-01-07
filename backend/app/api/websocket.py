@@ -1,14 +1,3 @@
-"""
-websocket.py
-
-WebSocket hub connecting:
-- Student video stream → backend analysis
-- Backend session state → teacher dashboard
-
-OpenCV-only pipeline (no MediaPipe, no landmarks).
-Designed for low-latency, real-time telemetry.
-"""
-
 import json
 import base64
 from fastapi import WebSocket, WebSocketDisconnect
@@ -20,10 +9,6 @@ from app.vision.confusion_logic import ConfusionDetector
 from app.vision.emotion_features import extract_emotion_features
 from app.config import GAZE_AWAY_THRESHOLD_SEC
 
-
-# ==================================================
-# Connection Manager
-# ==================================================
 
 class ConnectionManager:
     def __init__(self):
@@ -51,17 +36,12 @@ class ConnectionManager:
             except Exception:
                 self.teachers.remove(teacher)
 
-
 manager = ConnectionManager()
 
 
-# ==================================================
-# Helpers
-# ==================================================
-
 def decode_frame(frame_b64: str):
     """
-    Decode base64 image string into OpenCV frame.
+    Decode base64 image strings into OpenCV frame.
     """
     img_bytes = base64.b64decode(frame_b64)
     import numpy as np
@@ -71,16 +51,11 @@ def decode_frame(frame_b64: str):
     return cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
 
-# ==================================================
-# WebSocket Endpoints
-# ==================================================
 
+# websocket endpoints
 async def student_socket(websocket: WebSocket):
-    """
-    Receives video frames from student,
-    runs integrity + engagement analysis,
-    and broadcasts session state to teachers.
-    """
+    # Receive video frames from student, process them, and broadcasts to teacher.
+    
     await manager.connect_student(websocket)
 
     session_state = SessionState(
@@ -95,25 +70,21 @@ async def student_socket(websocket: WebSocket):
             payload = await websocket.receive_text()
             data = json.loads(payload)
 
-            # ---- basic payload validation ----
+            # basics payload validation
             if "frame" not in data or "gaze_direction" not in data:
                 continue
 
-            # -------------------------
+            
             # Decode frame
-            # -------------------------
             frame = decode_frame(data["frame"])
-
-            # -------------------------
+            
             # Integrity: face count
-            # -------------------------
             faces = face_detector.detect_faces(frame)
             face_count = len(faces)
             session_state.update_face_count(face_count)
 
-            # -------------------------
+            
             # Integrity: gaze tracking
-            # -------------------------
             gaze_direction = GazeDirection(data["gaze_direction"])
             gaze_tracker.update(gaze_direction)
 
@@ -121,9 +92,8 @@ async def student_socket(websocket: WebSocket):
                 gaze_centered=(gaze_direction == GazeDirection.CENTER)
             )
 
-            # -------------------------
-            # Engagement: confusion
-            # -------------------------
+            
+            # Engagement: confusion detection
             is_confused = False
 
             if face_count == 1:
@@ -140,9 +110,7 @@ async def student_socket(websocket: WebSocket):
 
             session_state.update_confusion(is_confused)
 
-            # -------------------------
             # Broadcast snapshot
-            # -------------------------
             snapshot = session_state.snapshot()
             snapshot["gaze_direction"] = gaze_tracker.current_direction
             snapshot["face_count"] = face_count
@@ -154,9 +122,6 @@ async def student_socket(websocket: WebSocket):
 
 
 async def teacher_socket(websocket: WebSocket):
-    """
-    Teacher subscribes to live session telemetry.
-    """
     await manager.connect_teacher(websocket)
 
     try:
